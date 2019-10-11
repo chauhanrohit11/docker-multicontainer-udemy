@@ -1,0 +1,24 @@
+language: generic
+
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t roohhiit110393/react-test -f ./client/Dockerfile.dev .
+
+script:
+  - docker run -e CI=true roohhiit110393/react-test npm run test -- --coverage
+
+after_success:
+  - docker build -t roohhiit110393/multi-client ./client
+  - docker build -t roohhiit110393/multi-worker ./worker
+  - docker build -t roohhiit110393/multi-nginx ./nginx
+  - docker build -t roohhiit110393/multi-server ./server
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # take images and push to the docker hub
+
+  - docker push roohhiit110393/multi-client
+  - docker push roohhiit110393/multi-server
+  - docker push roohhiit110393/multi-nginx
+  - docker push roohhiit110393/multi-worker
